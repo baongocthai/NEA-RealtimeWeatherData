@@ -1,5 +1,5 @@
 # =============================================================================
-# This script is used to download air temperature data from specified periods (start_date, end_date)
+# This script is used to download data from specified periods (start_date, end_date) and specified parameter 
 # from data.gov.sg, for all stations
 # =============================================================================
 import requests
@@ -7,16 +7,22 @@ import datetime as dt
 import pandas as pd
 import os
 
+#Choose directory
 directory = r'S:\01_PROJECTS\H2I-C2020-016_PUB-OMS\5_WorkingDocuments\PartC\LowerSeletar_EM_WAQ_D3D_D3DWAQ\DataDownload'
 os.chdir(directory)
 
-start_date = dt.datetime(2019, 1, 1)
-end_date = dt.datetime(2020, 1, 1)
+#Choose period of interest
+start_date = dt.datetime(2019, 7, 2, 0, 0, 0)
+end_date = dt.datetime(2020, 1, 1, 0, 0, 0)
+
+#Choose parameter of interest & change output file name
+parameter = 'wind-speed' #'air-temperature', 'rainfall', 'relative-humidity', 'wind-direction'
+output_file = 'WindSpeed_2019-2020-2.csv'
 
 total_days = (end_date - start_date).days + 1
 neadatasum = []
 
-#Get station info
+#Get station info from rainfall (rainfall has the most stations)
 current_date = (start_date + dt.timedelta(days = 0)).date()
 current_time = (start_date + dt.timedelta(hours = 0)).time()
 url = 'https://api.data.gov.sg/v1/environment/rainfall?date_time=' + str(current_date) + 'T' + \
@@ -36,12 +42,13 @@ for i in range(len(stations)):
 station_info = pd.DataFrame(list(zip(station_ID, station_name, station_lat, station_lon)))
 station_info.columns = ['Station_ID','Name','Lat','Lon']
 
+#Download data
 for day_number in range(total_days):
     for day_time in range(0, 1440, 1):
         current_date = (start_date + dt.timedelta(days = day_number)).date()
         current_time = (start_date + dt.timedelta(hours = day_time)).time()
         current_time = (start_date + dt.timedelta(minutes = day_time)).time()
-        url = 'https://api.data.gov.sg/v1/environment/air-temperature?date_time=' + str(current_date) + 'T' + \
+        url = 'https://api.data.gov.sg/v1/environment/'+ parameter +'?date_time=' + str(current_date) + 'T' + \
               str(current_time)
         headers = {"api-key": "ViSZINAmeMJNZgKlk66CwIl3lyrHgsu8"}
         data = requests.get(url, headers=headers).json()
@@ -65,7 +72,6 @@ timestamp = []
 for i in range(len(neadatasum)):
     timestamp.append(neadatasum[i][0][0])
     
-
 # Extract data
 df = []
 for i in range(len(neadatasum)):
@@ -78,4 +84,4 @@ for i in range(len(neadatasum)):
 df_new = pd.concat(df, axis=0, ignore_index=False)
 df_new.index = timestamp
 df_new.index = pd.to_datetime(df_new.index)
-df_new.to_csv('AirTemp_2019-2020.csv')
+df_new.to_csv(output_file)
