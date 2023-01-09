@@ -12,35 +12,15 @@ directory = r'S:\01_PROJECTS\H2I-C2020-016_PUB-OMS\5_WorkingDocuments\PartC\Lowe
 os.chdir(directory)
 
 #Choose period of interest
-start_date = dt.datetime(2019, 7, 2, 0, 0, 0)
+start_date = dt.datetime(2019, 1, 1, 0, 0, 0)
 end_date = dt.datetime(2020, 1, 1, 0, 0, 0)
 
 #Choose parameter of interest & change output file name
-parameter = 'wind-speed' #'air-temperature', 'rainfall', 'relative-humidity', 'wind-direction'
-output_file = 'WindSpeed_2019-2020-2.csv'
+parameter = 'wind-direction' #'air-temperature', 'rainfall', 'relative-humidity', 'wind-direction'
+output_file = 'WindDirection_2019-2020.csv'
 
 total_days = (end_date - start_date).days + 1
 neadatasum = []
-
-#Get station info from rainfall (rainfall has the most stations)
-current_date = (start_date + dt.timedelta(days = 0)).date()
-current_time = (start_date + dt.timedelta(hours = 0)).time()
-url = 'https://api.data.gov.sg/v1/environment/rainfall?date_time=' + str(current_date) + 'T' + \
-                str(current_time)
-headers = {"api-key": "ViSZINAmeMJNZgKlk66CwIl3lyrHgsu8"}
-data = requests.get(url, headers=headers).json()
-stations= data['metadata']['stations']
-station_ID = []
-station_name = []
-station_lat = []
-station_lon = []
-for i in range(len(stations)):
-    station_ID.append(stations[i]['id'])
-    station_name.append(stations[i]['name'])
-    station_lat.append(stations[i]['location']['latitude'])
-    station_lon.append(stations[i]['location']['longitude'])
-station_info = pd.DataFrame(list(zip(station_ID, station_name, station_lat, station_lon)))
-station_info.columns = ['Station_ID','Name','Lat','Lon']
 
 #Download data
 for day_number in range(total_days):
